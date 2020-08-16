@@ -1,5 +1,6 @@
 use std::env;
 
+use serde::{Deserialize, Serialize};
 use serenity::{
     framework::standard::macros::{check, command, group},
     framework::standard::{ArgError, Args, CommandResult, StandardFramework},
@@ -11,11 +12,23 @@ use serenity::{
 #[commands(create_event)]
 struct General;
 
+#[derive(Deserialize, Debug)]
+struct Event {
+    name: String,
+    day: i32,
+    month: i32,
+    year: i32,
+}
+
 // Result<String,ArgError<std::convert::Infallible>>
 
 #[command]
 fn create_event(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
-    let result: Vec<String> = args.iter::<String>().map(|c| c.unwrap()).inspect(|c| println!"{:?}", c).collect();
+    let result: Vec<String> = args
+        .iter::<String>()
+        .map(|c| c.unwrap())
+        .inspect(|c| println!("{:?}", c))
+        .collect();
 
     println!("{:?}", result);
 
@@ -35,7 +48,11 @@ fn main() {
     // by Discord for bot users.
     let mut client = Client::new(&token, Handler).expect("Err creating client");
 
-    client.with_framework(StandardFramework::new().configure(|c| c.prefix("!")).group(&GENERAL_GROUP));
+    client.with_framework(
+        StandardFramework::new()
+            .configure(|c| c.prefix("!"))
+            .group(&GENERAL_GROUP),
+    );
 
     // Finally, start a single shard, and start listening to events.
     //
