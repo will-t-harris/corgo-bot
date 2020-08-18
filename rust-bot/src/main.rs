@@ -12,7 +12,7 @@ use serenity::{
 #[commands(create_event)]
 struct General;
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Event {
     name: String,
     day: i32,
@@ -24,13 +24,18 @@ struct Event {
 
 #[command]
 fn create_event(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
-    let result: Vec<String> = args
-        .iter::<String>()
-        .map(|c| c.unwrap())
-        .inspect(|c| println!("{:?}", c))
-        .collect();
+    let result: Vec<String> = args.iter::<String>().map(|c| c.unwrap()).collect();
 
-    println!("{:?}", result);
+    let event = Event {
+        name: result[0].parse::<String>().unwrap(),
+        day: result[1].parse::<i32>().unwrap(),
+        month: result[2].parse::<i32>().unwrap(),
+        year: result[3].parse::<i32>().unwrap(),
+    };
+
+    let event_json_string = serde_json::to_string(&event).unwrap();
+
+    println!("{:?}", event_json_string);
 
     Ok(())
 }
