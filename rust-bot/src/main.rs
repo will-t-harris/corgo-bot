@@ -1,10 +1,11 @@
 use std::env;
+use std::fs;
 
 use serde::{Deserialize, Serialize};
 use serenity::{
-    framework::standard::macros::{check, command, group},
-    framework::standard::{ArgError, Args, CommandResult, StandardFramework},
-    model::{channel::Message, gateway::Ready},
+    framework::standard::macros::{command, group},
+    framework::standard::{Args, CommandResult, StandardFramework},
+    model::{channel::Message},
     prelude::*,
 };
 
@@ -20,10 +21,8 @@ struct Event {
     year: i32,
 }
 
-// Result<String,ArgError<std::convert::Infallible>>
-
 #[command]
-fn create_event(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResult {
+fn create_event(_ctx: &mut Context, _msg: &Message, mut args: Args) -> CommandResult {
     let result: Vec<String> = args.iter::<String>().map(|c| c.unwrap()).collect();
 
     let event = Event {
@@ -33,13 +32,16 @@ fn create_event(ctx: &mut Context, msg: &Message, mut args: Args) -> CommandResu
         year: result[3].parse::<i32>().unwrap(),
     };
 
-    let event_json_string = serde_json::to_string(&event).unwrap();
+    let event_json_string = serde_json::to_string(&event);
 
-    println!("{:?}", event_json_string);
-
+    write(event_json_string.unwrap()).unwrap_or_else(|err| println!("{:?}", err));
     Ok(())
 }
 
+fn write(s: String) -> std::io::Result<()> {
+    fs::write("text.json", s)?;
+    Ok(())
+}
 struct Handler;
 
 impl EventHandler for Handler {}
